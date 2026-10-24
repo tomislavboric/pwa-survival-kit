@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover + black-translucent: the full-cover setup the iOS viewport fix assumes. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="PWA Kit" />
+    <meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Live demo of pwa-survival-kit: deploy-skew chunk recovery, the iOS standalone viewport fix, and on-device photo compression." />
+    <title>PWA Survival Kit</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="wrap">
+        <p class="eyebrow">Open-source · zero dependencies · framework-agnostic</p>
+        <h1>PWA Survival Kit</h1>
+        <p class="lede">
+          Three small browser utilities for PWA problems that only show up in production:
+          chunk 404s after a deploy, the iOS home-screen short viewport, and multi-megabyte camera photos.
+        </p>
+        <nav class="toc" aria-label="Utilities">
+          <a href="#image">Image compression</a>
+          <a href="#recovery">Deploy-skew recovery</a>
+          <a href="#viewport">iOS viewport fix</a>
+          <a class="toc__repo" href="https://github.com/tomislavboric/pwa-survival-kit">Source on GitHub →</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <!-- 1. Image compression -->
+      <section class="card" id="image" aria-labelledby="image-title">
+        <div class="card__head">
+          <span class="card__num">01</span>
+          <div>
+            <h2 id="image-title">On-device photo compression</h2>
+            <p class="muted">
+              <code>compressImage(file, options)</code> downscales to a maximum long edge and lowers JPEG quality
+              until the photo fits a byte target — before anything goes over a weak mobile connection.
+              Nothing leaves your device on this page.
+            </p>
+          </div>
+        </div>
+
+        <div class="controls">
+          <label class="drop" id="drop">
+            <input type="file" id="file" accept="image/*" />
+            <span class="drop__title">Choose a photo</span>
+            <span class="muted small">or drop one here — a full-size phone photo shows the effect best</span>
+          </label>
+          <div class="fields">
+            <label class="field">
+              <span>Max long edge (px)</span>
+              <input type="number" id="max-edge" min="64" max="8000" step="50" value="1600" />
+            </label>
+            <label class="field">
+              <span>Target size (KB)</span>
+              <input type="number" id="target-kb" min="20" max="20000" step="10" value="700" />
+            </label>
+          </div>
+        </div>
+
+        <p class="error" id="image-error" role="alert" hidden></p>
+
+        <div class="compare" id="compare" hidden>
+          <figure class="pane">
+            <figcaption>Original</figcaption>
+            <div class="pane__img"><img id="orig-img" alt="Original photo" /></div>
+            <dl class="stats" id="orig-stats"></dl>
+          </figure>
+          <figure class="pane pane--accent">
+            <figcaption>Compressed <span class="badge" id="saving"></span></figcaption>
+            <div class="pane__img"><img id="comp-img" alt="Compressed photo" /></div>
+            <dl class="stats" id="comp-stats"></dl>
+            <a class="button button--ghost" id="download" download="compressed.jpg">Download JPEG</a>
+          </figure>
+        </div>
+      </section>
+
+      <!-- 2. Deploy-skew recovery -->
+      <section class="card" id="recovery" aria-labelledby="recovery-title">
+        <div class="card__head">
+          <span class="card__num">02</span>
+          <div>
+            <h2 id="recovery-title">Deploy-skew recovery</h2>
+            <p class="muted">
+              After a new deploy, a tab still running the old build asks for chunk files that no longer exist,
+              and the lazy <code>import()</code> fails. The first failure reloads once with a marker; a second
+              failure within the cooldown means the reload did not help, so instead of looping it shows a
+              refresh screen.
+            </p>
+          </div>
+        </div>
+
+        <ol class="steps">
+          <li><strong>Click once:</strong> a real <code>import()</code> of a missing chunk fails → recovery asks for a reload (simulated here, the page stays).</li>
+          <li><strong>Click again within 15&nbsp;s:</strong> the "reloaded" page fails the same way → the refresh screen appears instead of another reload.</li>
+          <li><strong>Wait 15&nbsp;s:</strong> an unrelated later failure gets its own free reload again.</li>
+        </ol>
+
+        <div class="row">
+          <button class="button" type="button" id="simulate">Simulate a failed lazy import</button>
+          <button class="button button--ghost" type="button" id="reset">Reset</button>
+          <span class="pill" id="marker" aria-live="polite">No reload marker</span>
+        </div>
+
+        <ol class="log" id="log" aria-live="polite" aria-label="Recovery log"></ol>
+      </section>
+
+      <!-- 3. iOS viewport fix -->
+      <section class="card" id="viewport" aria-labelledby="viewport-title">
+        <div class="card__head">
+          <span class="card__num">03</span>
+          <div>
+            <h2 id="viewport-title">iOS standalone viewport fix</h2>
+            <p class="muted">
+              iOS home-screen PWAs sometimes launch with a browser-sized layout viewport: <code>innerHeight</code>,
+              <code>100dvh</code> and <code>env(safe-area-inset-bottom)</code> come up short by the Safari chrome
+              band, and nothing recomputes until the first scroll. A full-screen splash stops above the bottom edge
+              and a fixed bottom nav floats mid-screen. <code>armStandaloneViewportFix()</code> detects the shortfall
+              and forces the recompute with an invisible scroll nudge and reflow, with bounded retries.
+            </p>
+          </div>
+        </div>
+
+        <div class="verdict" id="verdict"></div>
+
+        <dl class="grid" id="vp-values"></dl>
+
+        <p class="muted small">
+          To see it for real: open this page in Safari on an iPhone, Share → <em>Add to Home Screen</em>,
+          and launch it from the icon. This page arms the fix on load; attempts are listed below when it runs.
+        </p>
+        <ol class="log log--compact" id="vp-log" aria-label="Viewport fix attempts"></ol>
+
+        <!-- Measuring probes: what CSS thinks the viewport is. -->
+        <div class="probe" id="probe-dvh" aria-hidden="true"></div>
+        <div class="probe probe--vh" id="probe-vh" aria-hidden="true"></div>
+        <div class="probe probe--safe" id="probe-safe" aria-hidden="true"></div>
+      </section>
+    </main>
+
+    <footer class="wrap footer">
+      <p class="muted small">
+        MIT © 2026 Tomislav Borić ·
+        <a href="https://github.com/tomislavboric/pwa-survival-kit">github.com/tomislavboric/pwa-survival-kit</a>
+      </p>
+    </footer>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

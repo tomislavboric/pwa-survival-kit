@@ -1,0 +1,34 @@
+{
+  "name": "pwa-survival-kit",
+  "version": "0.1.0",
+  "description": "Three small, framework-agnostic fixes for PWA problems that only show up in production: deploy-skew chunk 404s, the iOS standalone short-viewport launch, and oversized camera photos.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Tomislav Borić",
+  "repository": "github:tomislavboric/pwa-survival-kit",
+  "homepage": "https://tomislavboric.github.io/pwa-survival-kit/",
+  "keywords": ["pwa", "vite", "service-worker", "ios", "viewport", "image-compression", "chunk-load-error"],
+  "sideEffects": false,
+  "files": ["src"],
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./app-update-recovery": "./src/appUpdateRecovery.js",
+    "./standalone-viewport-fix": "./src/standaloneViewportFix.js",
+    "./image-compress": "./src/imageCompress.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "demo": "vite",
+    "demo:build": "vite build"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.10.5",
+    "vite": "^5.1.0",
+    "vitest": "^1.6.1"
+  }
+}
